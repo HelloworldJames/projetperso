@@ -1,0 +1,70 @@
+{
+  "manifest_version": 3,
+  "name": "Hunter Companion",
+  "version": "1.0.0",
+  "description": "Analyse localement la fiche d’occasion actuellement consultée et affiche le verdict Hunter dans la page.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:8765/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://leboncoin.fr/*",
+        "https://*.leboncoin.fr/*"
+      ],
+      "js": [
+        "providers/leboncoin.js",
+        "overlay.js",
+        "companion-content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://facebook.com/marketplace/item/*",
+        "https://*.facebook.com/marketplace/item/*"
+      ],
+      "js": [
+        "providers/common.js",
+        "providers/facebook-marketplace.js",
+        "overlay.js",
+        "companion-content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://vinted.fr/items/*",
+        "https://*.vinted.fr/items/*"
+      ],
+      "js": [
+        "providers/common.js",
+        "providers/vinted.js",
+        "overlay.js",
+        "companion-content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://hunter-ia-radar.lesaint215.chatgpt.site/*",
+        "http://localhost/*"
+      ],
+      "js": ["content-bridge.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_title": "Hunter Companion",
+    "default_popup": "popup.html"
+  }
+}

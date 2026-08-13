@@ -1,0 +1,382 @@
+{
+  "date_probe": "2026-08-09T16:16:49.718650+02:00",
+  "nombre_sources": 13,
+  "resultats": [
+    {
+      "nom": "eBay",
+      "url": "https://www.ebay.fr/b/Ordinateurs-portables-et-netbooks/177/bn_16550152",
+      "url_finale": "https://www.ebay.fr/b/Ordinateurs-portables-et-netbooks/177/bn_16550152",
+      "type_source": "marketplace",
+      "statut_http": 200,
+      "taille": 1875974,
+      "content_type": "text/html; charset=utf-8",
+      "titre": "Ordinateurs portables et netbooks | eBay",
+      "nombre_liens": 105,
+      "indices": {
+        "ordinateur": true,
+        "pc": true,
+        "prix": true,
+        "occasion": true,
+        "livraison": true,
+        "rtx": true,
+        "ryzen": true,
+        "ssd": true,
+        "localisation": true
+      },
+      "structures": {
+        "json_ld": true,
+        "next_data": false,
+        "nuxt": false,
+        "json_api": true
+      },
+      "protections": [],
+      "score": 100,
+      "statut_probe": "🟢 CANDIDAT_DIRECT"
+    },
+    {
+      "nom": "Amazon Seconde main",
+      "url": "https://www.amazon.fr/Seconde-main/b/?node=3581943031",
+      "url_finale": "https://www.amazon.fr/Seconde-main/b/?node=3581943031",
+      "type_source": "marketplace",
+      "statut_http": 200,
+      "taille": 1017534,
+      "content_type": "text/html;charset=UTF-8",
+      "titre": "Amazon Seconde main: produits retournés comme neufs et produits d'occasion de qualité",
+      "nombre_liens": 298,
+      "indices": {
+        "ordinateur": true,
+        "pc": true,
+        "prix": true,
+        "occasion": true,
+        "livraison": true,
+        "rtx": false,
+        "ryzen": false,
+        "ssd": true,
+        "localisation": true
+      },
+      "structures": {
+        "json_ld": false,
+        "next_data": false,
+        "nuxt": false,
+        "json_api": true
+      },
+      "protections": [],
+      "score": 100,
+      "statut_probe": "🟢 CANDIDAT_DIRECT"
+    },
+    {
+      "nom": "ParuVendu",
+      "url": "https://www.paruvendu.fr/annonces/ordinateur-portable/",
+      "url_finale": "https://www.paruvendu.fr/annonces/ordinateur-portable/",
+      "type_source": "petites_annonces",
+      "statut_http": 200,
+      "taille": 296584,
+      "content_type": "text/html; charset=UTF-8",
+      "titre": "Ordinateurs portables occasion - ParuVendu",
+      "nombre_liens": 222,
+      "indices": {
+        "ordinateur": true,
+        "pc": true,
+        "prix": true,
+        "occasion": true,
+        "livraison": false,
+        "rtx": true,
+        "ryzen": true,
+        "ssd": false,
+        "localisation": true
+      },
+      "structures": {
+        "json_ld": true,
+        "next_data": false,
+        "nuxt": false,
+        "json_api": false
+      },
+      "protections": [],
+      "score": 95,
+      "statut_probe": "🟢 CANDIDAT_DIRECT"
+    },
+    {
+      "nom": "TopAnnonces",
+      "url": "https://www.topannonces.fr/vente-occasion-informatique/annonces/837406/",
+      "url_finale": "https://www.topannonces.fr/vente-occasion-informatique/annonces/837406/",
+      "type_source": "petites_annonces",
+      "statut_http": 200,
+      "taille": 102617,
+      "content_type": "text/html; charset=utf-8",
+      "titre": "Annonces informatique occasion entre particuliers : achat, vente d'occasions",
+      "nombre_liens": 47,
+      "indices": {
+        "ordinateur": true,
+        "pc": true,
+        "prix": true,
+        "occasion": true,
+        "livraison": false,
+        "rtx": false,
+        "ryzen": false,
+        "ssd": false,
+        "localisation": true
+      },
+      "structures": {
+        "json_ld": false,
+        "next_data": false,
+        "nuxt": false,
+        "json_api": false
+      },
+      "protections": [],
+      "score": 85,
+      "statut_probe": "🟢 CANDIDAT_DIRECT"
+    },
+    {
+      "nom": "Marche.fr",
+      "url": "https://www.marche.fr/informatique-hardware/",
+      "url_finale": "https://www.marche.fr/informatique-hardware/",
+      "type_source": "petites_annonces",
+      "statut_http": 200,
+      "taille": 33505,
+      "content_type": "text/html; charset=UTF-8",
+      "titre": "Petites annonces informatique hardware- - Marche.fr",
+      "nombre_liens": 112,
+      "indices": {
+        "ordinateur": true,
+        "pc": true,
+        "prix": false,
+        "occasion": true,
+        "livraison": false,
+        "rtx": true,
+        "ryzen": false,
+        "ssd": false,
+        "localisation": true
+      },
+      "structures": {
+        "json_ld": true,
+        "next_data": false,
+        "nuxt": false,
+        "json_api": false
+      },
+      "protections": [],
+      "score": 80,
+      "statut_probe": "🟢 CANDIDAT_DIRECT"
+    },
+    {
+      "nom": "Wallapop",
+      "url": "https://fr.wallapop.com/",
+      "url_finale": "https://fr.wallapop.com/",
+      "type_source": "marketplace",
+      "statut_http": 200,
+      "taille": 144210,
+      "content_type": "text/html; charset=utf-8",
+      "titre": "Petites annonces d&#x27;occasion, gratuites et locales - wallapop",
+      "nombre_liens": 114,
+      "indices": {
+        "ordinateur": true,
+        "pc": false,
+        "prix": false,
+        "occasion": true,
+        "livraison": false,
+        "rtx": false,
+        "ryzen": false,
+        "ssd": false,
+        "localisation": false
+      },
+      "structures": {
+        "json_ld": true,
+        "next_data": true,
+        "nuxt": false,
+        "json_api": true
+      },
+      "protections": [],
+      "score": 75,
+      "statut_probe": "🟢 CANDIDAT_DIRECT"
+    },
+    {
+      "nom": "Vivastreet",
+      "url": "https://www.vivastreet.com/achat-vente-informatique/fr",
+      "url_finale": "https://www.vivastreet.com/achat-vente-informatique/fr",
+      "type_source": "petites_annonces",
+      "statut_http": 200,
+      "taille": 783439,
+      "content_type": "text/html; charset=utf-8",
+      "titre": "Matériel informatique et ordinateurs d&#x27;occasion France",
+      "nombre_liens": 118,
+      "indices": {
+        "ordinateur": true,
+        "pc": true,
+        "prix": true,
+        "occasion": true,
+        "livraison": true,
+        "rtx": true,
+        "ryzen": true,
+        "ssd": true,
+        "localisation": true
+      },
+      "structures": {
+        "json_ld": true,
+        "next_data": false,
+        "nuxt": true,
+        "json_api": true
+      },
+      "protections": [
+        "cloudflare"
+      ],
+      "score": 70,
+      "statut_probe": "🛡️ PROTEGE"
+    },
+    {
+      "nom": "Vinted",
+      "url": "https://www.vinted.fr/catalog/3564-computers-and-accessories",
+      "url_finale": "https://www.vinted.fr/catalog/3564-computers-and-accessories",
+      "type_source": "marketplace",
+      "statut_http": 200,
+      "taille": 6918321,
+      "content_type": "text/html; charset=utf-8",
+      "titre": "Ordinateurs et accessoires | Vinted",
+      "nombre_liens": 258,
+      "indices": {
+        "ordinateur": true,
+        "pc": true,
+        "prix": true,
+        "occasion": true,
+        "livraison": true,
+        "rtx": true,
+        "ryzen": true,
+        "ssd": false,
+        "localisation": true
+      },
+      "structures": {
+        "json_ld": false,
+        "next_data": false,
+        "nuxt": false,
+        "json_api": true
+      },
+      "protections": [
+        "forbidden",
+        "captcha",
+        "challenge-platform"
+      ],
+      "score": 70,
+      "statut_probe": "🛡️ PROTEGE"
+    },
+    {
+      "nom": "Rakuten",
+      "url": "https://fr.shopping.rakuten.com/nav/Informatique_Ordinateur-portable",
+      "url_finale": "https://fr.shopping.rakuten.com/nav/Informatique_Ordinateur-portable",
+      "type_source": "marketplace",
+      "statut_http": 200,
+      "taille": 769951,
+      "content_type": "text/html; charset=utf-8",
+      "titre": "Ordinateur portable au meilleur prix - Achat pas cher, neuf &amp; occasion",
+      "nombre_liens": 460,
+      "indices": {
+        "ordinateur": true,
+        "pc": true,
+        "prix": true,
+        "occasion": true,
+        "livraison": true,
+        "rtx": true,
+        "ryzen": true,
+        "ssd": true,
+        "localisation": true
+      },
+      "structures": {
+        "json_ld": true,
+        "next_data": true,
+        "nuxt": false,
+        "json_api": true
+      },
+      "protections": [
+        "cloudflare"
+      ],
+      "score": 70,
+      "statut_probe": "🛡️ PROTEGE"
+    },
+    {
+      "nom": "AnnoncesEnFrance",
+      "url": "https://annoncesenfrance.fr/annonces/electronique/ordinateurs-portables",
+      "url_finale": "https://annoncesenfrance.fr/annonces/electronique/ordinateurs-portables",
+      "type_source": "petites_annonces",
+      "statut_http": 200,
+      "taille": 367988,
+      "content_type": "text/html; charset=utf-8",
+      "titre": "Ordinateurs portables — Électronique &amp; Téléphones — Annonces en France | Annonces en France",
+      "nombre_liens": 117,
+      "indices": {
+        "ordinateur": true,
+        "pc": true,
+        "prix": true,
+        "occasion": true,
+        "livraison": false,
+        "rtx": true,
+        "ryzen": true,
+        "ssd": true,
+        "localisation": true
+      },
+      "structures": {
+        "json_ld": true,
+        "next_data": false,
+        "nuxt": false,
+        "json_api": false
+      },
+      "protections": [
+        "forbidden"
+      ],
+      "score": 65,
+      "statut_probe": "🛡️ PROTEGE"
+    },
+    {
+      "nom": "Facebook Marketplace",
+      "url": "https://www.facebook.com/marketplace/category/computers/",
+      "url_finale": "https://www.facebook.com/marketplace/category/computers/",
+      "type_source": "marketplace",
+      "statut_http": 200,
+      "taille": 648622,
+      "content_type": "text/html; charset=\"utf-8\"",
+      "titre": "Articles neufs et d’occasion à vendre dans la catégorie Ordinateurs | Facebook Marketplace",
+      "nombre_liens": 67,
+      "indices": {
+        "ordinateur": true,
+        "pc": true,
+        "prix": true,
+        "occasion": true,
+        "livraison": false,
+        "rtx": true,
+        "ryzen": true,
+        "ssd": true,
+        "localisation": true
+      },
+      "structures": {
+        "json_ld": true,
+        "next_data": false,
+        "nuxt": false,
+        "json_api": true
+      },
+      "protections": [
+        "captcha",
+        "cloudflare"
+      ],
+      "score": 65,
+      "statut_probe": "🛡️ PROTEGE"
+    },
+    {
+      "nom": "Locanto",
+      "url": "https://www.locanto.fr/g/Ordinateurs-logiciels/403/",
+      "url_finale": "https://www.locanto.fr/g/Ordinateurs-logiciels/403/",
+      "type_source": "petites_annonces",
+      "statut_http": 403,
+      "taille": 12443,
+      "content_type": "text/html; charset=UTF-8",
+      "score": 0,
+      "statut_probe": "🔒 BLOQUE"
+    },
+    {
+      "nom": "Leboncoin",
+      "url": "https://www.leboncoin.fr/ck/ordinateurs/pc-gamer",
+      "url_finale": "https://www.leboncoin.fr/ck/ordinateurs/pc-gamer",
+      "type_source": "petites_annonces",
+      "statut_http": 403,
+      "taille": 1005,
+      "content_type": "text/html;charset=utf-8",
+      "score": 0,
+      "statut_probe": "🔒 BLOQUE"
+    }
+  ]
+}

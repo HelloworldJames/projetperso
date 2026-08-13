@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hunter Companion</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body { width: 350px; margin: 0; padding: 18px; color: #f5f2e9; background: radial-gradient(circle at 90% 0, #1b3028, transparent 42%), #0b0e0c; font: 13px/1.45 system-ui, sans-serif; }
+      header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+      .mark { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid #b78c43; border-radius: 9px; color: #e6b75e; font-weight: 900; }
+      h1 { margin: 0; font-size: 16px; }
+      header small { display: block; color: #7f8982; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+      .panel { padding: 14px; border: 1px solid rgba(255,255,255,.09); border-radius: 10px; background: rgba(255,255,255,.025); }
+      .toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .toggle strong { display: block; font-size: 12px; }
+      .toggle span { color: #8e9791; font-size: 10px; }
+      .switch { position: relative; width: 42px; height: 24px; flex: 0 0 auto; }
+      .switch input { position: absolute; opacity: 0; }
+      .slider { position: absolute; inset: 0; border-radius: 999px; background: #292f2b; cursor: pointer; transition: .2s; }
+      .slider::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #8b948e; transition: .2s; }
+      .switch input:checked + .slider { background: #315e49; }
+      .switch input:checked + .slider::after { left: 21px; background: #a6e1c2; }
+      .receiver { margin: 13px 0; padding: 9px 10px; border-radius: 7px; color: #c8b77f; background: rgba(230,183,94,.07); font-size: 10px; }
+      .receiver.connected { color: #8ed7b2; background: rgba(74,166,119,.09); }
+      button { width: 100%; border: 0; border-radius: 7px; padding: 11px 14px; color: #17130d; background: #e6b75e; font-weight: 780; cursor: pointer; }
+      button:disabled { opacity: .55; cursor: wait; }
+      #status { min-height: 18px; margin-top: 12px; color: #929b95; white-space: pre-wrap; }
+      .ok { color: #86d6b0 !important; }
+      .attention { color: #e6c783 !important; }
+      .erreur { color: #ee9b9b !important; }
+      .privacy { margin: 14px 0 0; padding: 12px 0 0 17px; border-top: 1px solid rgba(255,255,255,.08); color: #727b75; font-size: 9px; }
+      .privacy li { margin: 4px 0; }
+      footer { margin-top: 11px; color: #59615c; font-size: 9px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="mark">H</span>
+      <div><h1>Hunter Companion</h1><small>Multi-plateforme · version 1.0</small></div>
+    </header>
+    <div class="panel">
+      <div class="toggle">
+        <div>
+          <strong>Analyse automatique</strong>
+          <span>Leboncoin, Marketplace et Vinted visibles</span>
+        </div>
+        <label class="switch" title="Activer Hunter Companion">
+          <input id="companion-enabled" type="checkbox">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="receiver" id="receiver-state">Vérification du moteur local…</div>
+      <button id="analyze-current" type="button">Analyser cette annonce maintenant</button>
+      <div id="status" role="status"></div>
+      <ul class="privacy">
+        <li>Pas de cookies, session ou identifiants.</li>
+        <li>Pas d’historique ni de navigation automatique.</li>
+        <li>Pas de messages ou données du compte.</li>
+        <li>La fiche courante est envoyée au moteur local uniquement.</li>
+        <li>Autre site : analyse manuelle après votre clic uniquement.</li>
+      </ul>
+    </div>
+    <footer>Radar et Companion sont deux systèmes séparés.</footer>
+    <script src="popup.js"></script>
+  </body>
+</html>

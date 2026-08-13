@@ -1,0 +1,452 @@
+{
+  "EASYCASH-005336995": {
+    "date_cache": "2026-08-08T14:11:42.399185+02:00",
+    "details": {
+      "gpu": "Apple M4",
+      "cpu": "Apple M4",
+      "cpu_vitesse": "4.4 GHz",
+      "ram": "16 Go",
+      "ssd": "256 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "N.C.",
+      "coeurs": "10",
+      "systeme": "MacOS Sequoia"
+    }
+  },
+  "EASYCASH-005567364": {
+    "date_cache": "2026-08-08T14:11:42.992985+02:00",
+    "details": {
+      "gpu": "NVIDIA RTX 2060",
+      "cpu": "Intel Core i5",
+      "cpu_vitesse": "3.7 GHz",
+      "ram": "16 Go",
+      "ssd": "500 Go",
+      "hdd": "2 000 Go",
+      "stockage_type": "HDD + SSD",
+      "vram": "6",
+      "coeurs": "6",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005560257": {
+    "date_cache": "2026-08-08T14:11:43.588876+02:00",
+    "details": {
+      "gpu": "--",
+      "cpu": "AMD Ryzen 5",
+      "cpu_vitesse": "3.70 GHz",
+      "ram": "16 Go",
+      "ssd": "512 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "-",
+      "coeurs": "4",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005320869": {
+    "date_cache": "2026-08-08T14:11:44.181657+02:00",
+    "details": {
+      "gpu": "NVIDIA GeForce RTX 3050",
+      "cpu": "Intel Core i5",
+      "cpu_vitesse": "2.50 GHz",
+      "ram": "16 Go",
+      "ssd": "512 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "4 Go",
+      "coeurs": "6",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005315337": {
+    "date_cache": "2026-08-08T14:11:44.987226+02:00",
+    "details": {
+      "gpu": "Apple M4",
+      "cpu": "Apple M4",
+      "cpu_vitesse": "2.4 GHz",
+      "ram": "16 Go",
+      "ssd": "512 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": null,
+      "coeurs": "10",
+      "systeme": "MacOS Monterey"
+    }
+  },
+  "EASYCASH-005560187": {
+    "date_cache": "2026-08-08T14:30:06.797448+02:00",
+    "details": {
+      "gpu": "Gtx 1060",
+      "cpu": "Intel Core 5",
+      "cpu_vitesse": "3.80 GHz",
+      "ram": "16 Go",
+      "ssd": "250 Go",
+      "hdd": "1 000 Go",
+      "stockage_type": "HDD + SSD",
+      "vram": "-",
+      "coeurs": "4",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005020904": {
+    "date_cache": "2026-08-08T14:30:07.391090+02:00",
+    "details": {
+      "gpu": "NVIDIA GeForce GTX 1660 Super",
+      "cpu": "Intel Core i5",
+      "cpu_vitesse": "2.90 GHz",
+      "ram": "16 Go",
+      "ssd": "512 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "8 Go",
+      "coeurs": "6",
+      "systeme": "Windows 10"
+    }
+  },
+  "EASYCASH-005569313": {
+    "date_cache": "2026-08-08T14:30:07.987685+02:00",
+    "details": {
+      "gpu": "GTX 1070",
+      "cpu": "Intel Core 7",
+      "cpu_vitesse": "2.5 GHz",
+      "ram": "16 Go",
+      "ssd": "60 Go",
+      "hdd": "3 000 Go",
+      "stockage_type": "HDD + SSD",
+      "vram": "8",
+      "coeurs": "4",
+      "systeme": "Windows 10"
+    }
+  },
+  "EASYCASH-005392679": {
+    "date_cache": "2026-08-08T14:30:08.578723+02:00",
+    "details": {
+      "gpu": "AMD Radeon Graphics",
+      "cpu": "AMD Ryzen 3",
+      "cpu_vitesse": "3.6 GHz",
+      "ram": "16 Go",
+      "ssd": "256 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "1 Go",
+      "coeurs": "8",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005543160": {
+    "date_cache": "2026-08-08T14:30:09.174896+02:00",
+    "details": {
+      "gpu": "Radeon pro 3200",
+      "cpu": "Intel Core i7",
+      "cpu_vitesse": "2.9 GHz",
+      "ram": "16 Go",
+      "ssd": "512 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "4",
+      "coeurs": "8",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005576631": {
+    "date_cache": "2026-08-08T14:30:09.767906+02:00",
+    "details": {
+      "gpu": "RTX 3060 TI",
+      "cpu": "RYZEN 5 5500",
+      "cpu_vitesse": "3.6 GHz",
+      "ram": "16 Go",
+      "ssd": "1 000 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "1000",
+      "coeurs": "8",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005453202": {
+    "date_cache": "2026-08-08T14:30:10.870516+02:00",
+    "details": {
+      "gpu": null,
+      "cpu": null,
+      "cpu_vitesse": null,
+      "ram": null,
+      "ssd": null,
+      "hdd": null,
+      "stockage_type": null,
+      "vram": null,
+      "coeurs": null,
+      "systeme": null
+    }
+  },
+  "EASYCASH-005561687": {
+    "date_cache": "2026-08-08T14:30:11.464746+02:00",
+    "details": {
+      "gpu": "Rtx 5060",
+      "cpu": "Intel Core Ultra 7",
+      "cpu_vitesse": null,
+      "ram": "32 Go",
+      "ssd": "1 000 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "8",
+      "coeurs": "20",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005189951": {
+    "date_cache": "2026-08-08T14:30:12.303519+02:00",
+    "details": {
+      "gpu": "NVIDIA GeForce RTX 3060",
+      "cpu": "Intel Core i5",
+      "cpu_vitesse": "4.4 GHz",
+      "ram": "16 Go",
+      "ssd": "512 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "4 Go",
+      "coeurs": "6",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005576670": {
+    "date_cache": "2026-08-08T14:30:12.897857+02:00",
+    "details": {
+      "gpu": "RX9060 16 GO",
+      "cpu": "RYZEN 7 5700X",
+      "cpu_vitesse": "3.4 GHz",
+      "ram": "32 Go",
+      "ssd": "1 000 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "1000",
+      "coeurs": "8",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005578795": {
+    "date_cache": "2026-08-08T14:30:13.493446+02:00",
+    "details": {
+      "gpu": "RTX 5060 Ti",
+      "cpu": "AMD Ryzen 9",
+      "cpu_vitesse": "5.2 GHz",
+      "ram": "32 Go",
+      "ssd": "1 000 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "8",
+      "coeurs": "12",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005574334": {
+    "date_cache": "2026-08-08T14:30:14.087558+02:00",
+    "details": {
+      "gpu": "NVIDIA GEFORCE RTX 4060",
+      "cpu": "Intel Core i7",
+      "cpu_vitesse": "3.4 GHz",
+      "ram": "32 Go",
+      "ssd": "2 000 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "4",
+      "coeurs": "20",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005577325": {
+    "date_cache": "2026-08-08T14:30:15.004094+02:00",
+    "details": {
+      "gpu": "NVIDIA GeForce RTX 4070",
+      "cpu": "Intel Core i5",
+      "cpu_vitesse": "3.4 GHz",
+      "ram": "16 Go",
+      "ssd": "1 000 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "8 Go",
+      "coeurs": "6",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005578882": {
+    "date_cache": "2026-08-08T14:30:15.599442+02:00",
+    "details": {
+      "gpu": "RTX 4060 8 Go",
+      "cpu": "AMD Ryzen 7",
+      "cpu_vitesse": "3.4 GHz",
+      "ram": "16 Go",
+      "ssd": "512 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "8",
+      "coeurs": "8",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005576552": {
+    "date_cache": "2026-08-08T14:30:16.222029+02:00",
+    "details": {
+      "gpu": "NVIDIA GeForce RTX 4060",
+      "cpu": "AMD Ryzen 7",
+      "cpu_vitesse": "3.60 GHz",
+      "ram": "32 Go",
+      "ssd": "1 500 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "8 Go",
+      "coeurs": "8",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005578344": {
+    "date_cache": "2026-08-08T14:30:16.815772+02:00",
+    "details": {
+      "gpu": "Sans carte graphique",
+      "cpu": "Intel Core 5",
+      "cpu_vitesse": "3.20 GHz",
+      "ram": "16 Go",
+      "ssd": "1 000 Go",
+      "hdd": null,
+      "stockage_type": "HDD + SSD",
+      "vram": null,
+      "coeurs": "4",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005558343": {
+    "date_cache": "2026-08-08T14:30:17.672435+02:00",
+    "details": {
+      "gpu": "Nvidia geforce rtx 5060",
+      "cpu": "Intel Core 7",
+      "cpu_vitesse": "2.4 GHz",
+      "ram": "32 Go",
+      "ssd": "1 000 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "Nc",
+      "coeurs": "10",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005554826": {
+    "date_cache": "2026-08-08T14:30:18.265597+02:00",
+    "details": {
+      "gpu": "Amd radeon rx 6400",
+      "cpu": "Intel Core i3",
+      "cpu_vitesse": null,
+      "ram": "16 Go",
+      "ssd": "512 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "4",
+      "coeurs": "4",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005542620": {
+    "date_cache": "2026-08-08T14:30:19.126293+02:00",
+    "details": {
+      "gpu": "Nvidia geforce rtx 4060",
+      "cpu": "Intel Core 5",
+      "cpu_vitesse": "2.5 GHz",
+      "ram": "16 Go",
+      "ssd": "512 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "8",
+      "coeurs": "10",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005538009": {
+    "date_cache": "2026-08-08T14:30:19.959559+02:00",
+    "details": {
+      "gpu": "N.C.",
+      "cpu": "Intel Core 5",
+      "cpu_vitesse": null,
+      "ram": "16 Go",
+      "ssd": "512 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "N.C.",
+      "coeurs": "N.C.",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005453591": {
+    "date_cache": "2026-08-08T14:30:20.552376+02:00",
+    "details": {
+      "gpu": "NVIDIA GeForce GTX 1650",
+      "cpu": "Intel Core i5",
+      "cpu_vitesse": "2.50 GHz",
+      "ram": "16 Go",
+      "ssd": "512 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "8 Go",
+      "coeurs": "6",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005566189": {
+    "date_cache": "2026-08-08T14:30:21.151756+02:00",
+    "details": {
+      "gpu": "Nvidia Geforce RTX 5060 TI",
+      "cpu": "AMD Ryzen 7",
+      "cpu_vitesse": null,
+      "ram": "16 Go",
+      "ssd": "1 000 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "8 Gb",
+      "coeurs": "8",
+      "systeme": "Windows 11"
+    }
+  },
+  "EASYCASH-005097371": {
+    "date_cache": "2026-08-08T14:30:21.749580+02:00",
+    "details": {
+      "gpu": "NVIDIA GeForce GT 610",
+      "cpu": "Intel Core i5",
+      "cpu_vitesse": "3.30 GHz",
+      "ram": "16 Go",
+      "ssd": "512 Go",
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "2 Go",
+      "coeurs": "4",
+      "systeme": "Windows 10"
+    }
+  },
+  "EASYCASH-005443015": {
+    "date_cache": "2026-08-08T14:30:22.578003+02:00",
+    "details": {
+      "gpu": null,
+      "cpu": null,
+      "cpu_vitesse": null,
+      "ram": null,
+      "ssd": null,
+      "hdd": null,
+      "stockage_type": null,
+      "vram": null,
+      "coeurs": null,
+      "systeme": null
+    }
+  },
+  "EASYCASH-005535445": {
+    "date_cache": "2026-08-08T14:30:23.173866+02:00",
+    "details": {
+      "gpu": "Radeon rx 570 series",
+      "cpu": "Intel Core i5",
+      "cpu_vitesse": "2.9 GHz",
+      "ram": "16 Go",
+      "ssd": null,
+      "hdd": null,
+      "stockage_type": "SSD",
+      "vram": "8 Go",
+      "coeurs": "6",
+      "systeme": "Windows 11"
+    }
+  }
+}

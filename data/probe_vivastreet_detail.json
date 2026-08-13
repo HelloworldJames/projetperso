@@ -1,0 +1,81 @@
+{
+  "date_probe": "2026-08-09T16:47:45.646865+02:00",
+  "nombre_tests": 3,
+  "resultats": [
+    {
+      "plateforme": "Vivastreet",
+      "identifiant": "341967230",
+      "titre": "Vivastreet FR",
+      "prix": 180,
+      "description": "Carte graphique Nvidia RTX 3050, 6 Go de mémoire. 3 sorties DisplayPort, 1 sortie HDMI Pour remise en main propre sur bassin grenoblois",
+      "localisation": "Eybens",
+      "code_postal": "38320",
+      "url": "https://www.vivastreet.com/achat-vente-informatique/eybens-38320/nvidia-rtx-3050-6go/341967230",
+      "statut_http": 200,
+      "sources_extraction": {
+        "titre": "JSON-LD",
+        "prix": "HTML",
+        "description": "JSON-LD",
+        "localisation": "URL"
+      },
+      "json_ld_types": [
+        "WebSite",
+        "BreadcrumbList",
+        "ListItem",
+        "WebPage",
+        "Person"
+      ],
+      "complet": true
+    },
+    {
+      "plateforme": "Vivastreet",
+      "identifiant": "347897046",
+      "titre": "Vivastreet FR",
+      "prix": 420,
+      "description": "Je vends mon ordinateur portable ASUS TUF Gaming A17, - Processeur AMD Ryzen 7 4800H - 16 GB RAM - Écran 17 pouces - Fonctionne uniquement sur secteur Utilisé principalement pour du plan 3D, il a to",
+      "localisation": "Lyon",
+      "code_postal": "69001",
+      "url": "https://www.vivastreet.com/achat-vente-informatique/lyon-69001/laptop-asus-tuf-gaming-a17/347897046",
+      "statut_http": 200,
+      "sources_extraction": {
+        "titre": "JSON-LD",
+        "prix": "HTML",
+        "description": "JSON-LD",
+        "localisation": "URL"
+      },
+      "json_ld_types": [
+        "WebSite",
+        "BreadcrumbList",
+        "ListItem",
+        "WebPage",
+        "Person"
+      ],
+      "complet": true
+    },
+    {
+      "plateforme": "Vivastreet",
+      "identifiant": "346464136",
+      "titre": "Vivastreet FR",
+      "prix": 175,
+      "description": "Vend un mini tour HP ProDesk 600 G4 SFF avec licence numérique Windows 11 Pro. Très rapide et fonctionnel. Mémoire : 16 Go de RAM Stockage (Go) :1 SSD 256 Go + 1 HDD 500 Go Vitesse du processeur : 3.",
+      "localisation": "Houplin Ancoisne",
+      "code_postal": "59263",
+      "url": "https://www.vivastreet.com/achat-vente-informatique/houplin-ancoisne-59263/hp-prodesk-600-g4-sff--i5---ssd-256-go---hdd-500-go-16-go-wi/346464136",
+      "statut_http": 200,
+      "sources_extraction": {
+        "titre": "JSON-LD",
+        "prix": "HTML",
+        "description": "JSON-LD",
+        "localisation": "URL"
+      },
+      "json_ld_types": [
+        "WebSite",
+        "BreadcrumbList",
+        "ListItem",
+        "WebPage",
+        "Person"
+      ],
+      "complet": true
+    }
+  ]
+}

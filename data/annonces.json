@@ -1,0 +1,32 @@
+[
+  {
+    "identifiant": "LBC-TEST-001",
+    "titre": "PC Gamer Ryzen 5 5600 RTX 3060",
+    "prix": 350,
+    "description": "16 Go RAM SSD 512 Go tres bon etat",
+    "localisation": "Rochefort",
+    "plateforme": "Leboncoin",
+    "url": null,
+    "date_publication": "2026-08-08T11:55:00+02:00"
+  },
+  {
+    "identifiant": "LBC-TEST-002",
+    "titre": "PC Gamer RTX 3060 Ryzen 5 5600",
+    "prix": 180,
+    "description": "SSD 500 Go ne demarre plus vendu en l'etat",
+    "localisation": "Saintes",
+    "plateforme": "Leboncoin",
+    "url": null,
+    "date_publication": "2026-08-06T15:00:00+02:00"
+  },
+  {
+    "identifiant": "TEST-NOUVELLE-003",
+    "titre": "PC Gamer RTX 3070 Ryzen 7",
+    "prix": 380,
+    "description": "32 Go RAM SSD 1 To tres bon etat",
+    "localisation": "Rochefort",
+    "plateforme": "Test PC Hunter",
+    "url": null,
+    "date_publication": "2026-08-08T12:00:00+02:00"
+  }
+]

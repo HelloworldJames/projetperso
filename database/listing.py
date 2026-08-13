@@ -7,14 +7,24 @@ BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "pc_hunter.db"
 
 
+# ============================================================
+# CONNEXION
+# ============================================================
+
 def connexion_db():
 
-    connexion = sqlite3.connect(DB_PATH)
+    connexion = sqlite3.connect(
+        DB_PATH
+    )
 
     connexion.row_factory = sqlite3.Row
 
     return connexion
 
+
+# ============================================================
+# INITIALISATION
+# ============================================================
 
 def initialiser_database():
 
@@ -59,14 +69,37 @@ def initialiser_database():
     connexion.close()
 
 
+# ============================================================
+# DATE ACTUELLE
+# ============================================================
+
+def maintenant_iso():
+
+    return (
+        datetime
+        .now()
+        .astimezone()
+        .isoformat(
+            timespec="seconds"
+        )
+    )
+
+
+# ============================================================
+# ENREGISTRER / METTRE À JOUR UNE ANNONCE
+# ============================================================
+
 def enregistrer_annonce(annonce):
 
-    maintenant = datetime.now().isoformat(
-        timespec="seconds"
-    )
+    maintenant = maintenant_iso()
 
     connexion = connexion_db()
     curseur = connexion.cursor()
+
+
+    # --------------------------------------------------------
+    # RECHERCHE
+    # --------------------------------------------------------
 
     curseur.execute(
         """
@@ -74,15 +107,19 @@ def enregistrer_annonce(annonce):
         FROM annonces
         WHERE identifiant = ?
         """,
-        (annonce.identifiant,)
+        (
+            annonce.identifiant,
+        )
     )
 
-    ancienne_annonce = curseur.fetchone()
+    ancienne_annonce = (
+        curseur.fetchone()
+    )
 
 
-    # -------------------------------
+    # ========================================================
     # NOUVELLE ANNONCE
-    # -------------------------------
+    # ========================================================
 
     if ancienne_annonce is None:
 
@@ -116,6 +153,8 @@ def enregistrer_annonce(annonce):
             )
         )
 
+
+        # Premier prix connu
         curseur.execute(
             """
             INSERT INTO historique_prix (
@@ -135,46 +174,72 @@ def enregistrer_annonce(annonce):
         connexion.commit()
         connexion.close()
 
+
         return {
             "statut": "nouvelle",
+
+            "est_nouvelle": True,
+
             "ancien_prix": None,
-            "nouveau_prix": annonce.prix
+            "nouveau_prix": annonce.prix,
+
+            "premiere_detection":
+                maintenant,
+
+            "derniere_detection":
+                maintenant
         }
 
 
-    # -------------------------------
+    # ========================================================
     # ANNONCE DÉJÀ CONNUE
-    # -------------------------------
+    # ========================================================
 
-    ancien_prix = ancienne_annonce["prix_actuel"]
+    ancien_prix = float(
+        ancienne_annonce[
+            "prix_actuel"
+        ]
+    )
 
+    premiere_detection = (
+        ancienne_annonce[
+            "premiere_detection"
+        ]
+    )
+
+
+    # Mise à jour des informations
     curseur.execute(
         """
         UPDATE annonces
         SET
-            prix_actuel = ?,
-            derniere_detection = ?,
+            plateforme = ?,
             titre = ?,
             description = ?,
-            localisation = ?
+            localisation = ?,
+            url = ?,
+            prix_actuel = ?,
+            derniere_detection = ?
         WHERE identifiant = ?
         """,
         (
-            annonce.prix,
-            maintenant,
+            annonce.plateforme,
             annonce.titre,
             annonce.description,
             annonce.localisation,
+            annonce.url,
+            annonce.prix,
+            maintenant,
             annonce.identifiant
         )
     )
 
 
-    # -------------------------------
+    # ========================================================
     # CHANGEMENT DE PRIX
-    # -------------------------------
+    # ========================================================
 
-    if annonce.prix != ancien_prix:
+    if float(annonce.prix) != ancien_prix:
 
         curseur.execute(
             """
@@ -197,50 +262,171 @@ def enregistrer_annonce(annonce):
     connexion.close()
 
 
-    if annonce.prix < ancien_prix:
+    # ========================================================
+    # BAISSE
+    # ========================================================
+
+    if float(annonce.prix) < ancien_prix:
 
         return {
             "statut": "baisse",
-            "ancien_prix": ancien_prix,
-            "nouveau_prix": annonce.prix
+
+            "est_nouvelle": False,
+
+            "ancien_prix":
+                ancien_prix,
+
+            "nouveau_prix":
+                annonce.prix,
+
+            "premiere_detection":
+                premiere_detection,
+
+            "derniere_detection":
+                maintenant
         }
 
-    elif annonce.prix > ancien_prix:
+
+    # ========================================================
+    # HAUSSE
+    # ========================================================
+
+    if float(annonce.prix) > ancien_prix:
 
         return {
             "statut": "hausse",
-            "ancien_prix": ancien_prix,
-            "nouveau_prix": annonce.prix
+
+            "est_nouvelle": False,
+
+            "ancien_prix":
+                ancien_prix,
+
+            "nouveau_prix":
+                annonce.prix,
+
+            "premiere_detection":
+                premiere_detection,
+
+            "derniere_detection":
+                maintenant
         }
+
+
+    # ========================================================
+    # CONNUE, SANS CHANGEMENT
+    # ========================================================
 
     return {
         "statut": "connue",
-        "ancien_prix": ancien_prix,
-        "nouveau_prix": annonce.prix
+
+        "est_nouvelle": False,
+
+        "ancien_prix":
+            ancien_prix,
+
+        "nouveau_prix":
+            annonce.prix,
+
+        "premiere_detection":
+            premiere_detection,
+
+        "derniere_detection":
+            maintenant
     }
-def obtenir_historique_prix(identifiant):
+
+
+# ============================================================
+# HISTORIQUE DES PRIX
+# ============================================================
+
+def obtenir_historique_prix(
+    identifiant
+):
 
     connexion = connexion_db()
     curseur = connexion.cursor()
 
     curseur.execute(
         """
-        SELECT prix, date_detection
+        SELECT
+            prix,
+            date_detection
+
         FROM historique_prix
+
         WHERE identifiant_annonce = ?
+
         ORDER BY date_detection ASC
         """,
-        (identifiant,)
+        (
+            identifiant,
+        )
     )
 
     lignes = curseur.fetchall()
 
     connexion.close()
 
+
     return [
         {
-            "prix": ligne["prix"],
-            "date": ligne["date_detection"]
+            "prix":
+                ligne["prix"],
+
+            "date":
+                ligne[
+                    "date_detection"
+                ]
         }
+
         for ligne in lignes
     ]
+
+
+# ============================================================
+# INFORMATIONS DE DÉTECTION
+# ============================================================
+
+def obtenir_infos_detection(
+    identifiant
+):
+
+    connexion = connexion_db()
+    curseur = connexion.cursor()
+
+    curseur.execute(
+        """
+        SELECT
+            premiere_detection,
+            derniere_detection
+
+        FROM annonces
+
+        WHERE identifiant = ?
+        """,
+        (
+            identifiant,
+        )
+    )
+
+    ligne = curseur.fetchone()
+
+    connexion.close()
+
+
+    if ligne is None:
+
+        return None
+
+
+    return {
+        "premiere_detection":
+            ligne[
+                "premiere_detection"
+            ],
+
+        "derniere_detection":
+            ligne[
+                "derniere_detection"
+            ]
+    }

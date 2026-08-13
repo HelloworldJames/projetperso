@@ -1,0 +1,4 @@
+state/
+__pycache__/
+scraper/__pycache__/
+tests/__pycache__/

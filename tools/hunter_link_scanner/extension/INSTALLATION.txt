@@ -1,0 +1,27 @@
+HUNTER COMPANION 1.0 — ANALYSE MULTI-PLATEFORME
+
+1. Double-cliquez sur Lancer-Compagnon-Hunter.cmd a la racine du projet.
+2. Dans Edge ou Chrome, ouvrez la page des extensions.
+3. Activez le Mode developpeur.
+4. Chargez ou rechargez ce dossier comme extension decompressee.
+5. Epinglez Hunter Companion.
+6. Ouvrez normalement une fiche Leboncoin, Facebook Marketplace ou Vinted.
+7. Dans le popup, activez Analyse automatique ou cliquez sur Analyser cette
+   annonce maintenant.
+8. Le resultat Hunter apparait directement dans la page.
+
+Le Companion 1.0 ne surveille aucun catalogue et n'ouvre pas d'onglet en
+arriere-plan. Il analyse uniquement la fiche visible lorsque l'utilisateur l'a
+active.
+
+Sur une autre plateforme publique HTTPS, ouvrez la fiche puis cliquez sur
+Analyser cette annonce maintenant. Cette lecture generique est declenchee par
+votre clic et n'accorde aucun acces permanent aux autres sites.
+
+Chaque resultat est conserve dans la watchlist locale. Lorsque vous revenez sur
+la webapp Hunter avec le moteur local actif, l'extension synchronise cette boite
+de reception locale sans envoyer de cookies ni de donnees de compte.
+
+Il ne lit ni cookies, ni session, ni identifiants, ni historique, ni messages,
+ni donnees du compte. Les donnees vendeur sont exclues et les images ne sont pas
+transmises dans ce prototype.

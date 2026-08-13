@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Validation visuelle — Hunter Companion</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: #18201c;
+        background: #f4f4f0;
+        font: 16px/1.5 Inter, ui-sans-serif, system-ui, sans-serif;
+      }
+      main {
+        width: min(880px, calc(100% - 48px));
+        margin: 72px auto;
+        padding: 32px;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 18px 60px rgba(22, 31, 26, .08);
+      }
+      .price { color: #214e3a; font-size: 30px; font-weight: 800; }
+      .controls { display: flex; gap: 10px; margin-top: 28px; }
+      button {
+        padding: 10px 14px;
+        border: 1px solid #c8cec9;
+        border-radius: 9px;
+        background: #f8f9f7;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p>Fiche de validation locale — aucune donnée vendeur</p>
+      <h1>MacBook Neo — 256 Go / 8 Go</h1>
+      <p class="price">495 €</p>
+      <p>Très bon état · garantie jusqu’à 05/2027 · Saint-Jean-d’Angély</p>
+      <div class="controls">
+        <button id="success" type="button">Bonne opportunité</button>
+        <button id="insufficient" type="button">Données insuffisantes</button>
+      </div>
+    </main>
+    <script src="../extension/overlay.js"></script>
+    <script>
+      const capture = { prix: 495 };
+      const analyse = {
+        score_affaire: 87,
+        decision: "BONNE_AFFAIRE",
+        estimation: { valeur_probable: 650, confiance_score: 84 },
+        marge_nette_prudente: 112,
+        prix_achat_max: 530,
+        raisons: [
+          "Prix inférieur aux comparables retenus",
+          "Configuration identifiable",
+          "Garantie annoncée à vérifier",
+        ],
+        action_recommandee: "Vérifier le numéro de série et l’état de la batterie avant achat.",
+      };
+
+      document.getElementById("success").addEventListener("click", () => {
+        window.HunterOverlay.analyse(capture, analyse);
+      });
+      document.getElementById("insufficient").addEventListener("click", () => {
+        window.HunterOverlay.analyse(capture, {
+          decision: "INFORMATIONS_INSUFFISANTES",
+          raisons: ["Le modèle exact ou la génération manque."],
+        });
+      });
+      window.HunterOverlay.analyse(capture, analyse);
+    </script>
+  </body>
+</html>

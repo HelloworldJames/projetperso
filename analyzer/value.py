@@ -1,111 +1,2469 @@
+import re
+import unicodedata
+
 from database.price import PRIX_COMPOSANTS
 
+from analyzer.components import (
+    detecter_composants,
+    detecter_machine_apple,
+    detecter_machine_portable_windows,
+    texte_annonce,
+)
 
-def estimer_valeur(annonce):
-
-    texte = (
-        annonce.titre + " " +
-        annonce.description
-    ).lower()
-
-    valeur_composants = 0
-    composants = []
-
-    categories_trouvees = set()
-
-    for composant, infos in PRIX_COMPOSANTS.items():
-
-        if composant in texte:
-
-            categorie = infos["categorie"]
-            prix = infos["prix"]
-
-            # Évite de compter deux composants
-            # appartenant à la même catégorie
-            if categorie not in categories_trouvees:
-
-                valeur_composants += prix
-                composants.append(composant)
-                categories_trouvees.add(categorie)
+from analyzer.consistency import (
+    verifier_coherence,
+)
 
 
-    # Catégories principales attendues dans un PC
-    categories_principales = {
-        "gpu",
-        "cpu",
-        "ram",
-        "stockage"
-    }
+CATEGORIES_PRINCIPALES = {
+    "gpu",
+    "cpu",
+    "ram",
+    "stockage",
+}
 
-    categories_manquantes = (
-        categories_principales - categories_trouvees
+
+# ============================================================
+# REFERENCES APPLE INTERNES - VERSION 1
+#
+# IMPORTANT :
+# Ce ne sont PAS des cotations live.
+# Ce sont des bases prudentes de machine COMPLETE d'occasion.
+#
+# PC Hunter pourra ensuite remplacer ces bases par des
+# comparables réels issus de son historique de marché.
+# ============================================================
+
+APPLE_SILICON_BASE = {
+    # MacBook Air
+    ("MacBook Air", "M1"): 450,
+    ("MacBook Air", "M2"): 600,
+    ("MacBook Air", "M3"): 750,
+    ("MacBook Air", "M4"): 900,
+
+    # MacBook Pro
+    ("MacBook Pro", "M1"): 600,
+    ("MacBook Pro", "M1 Pro"): 850,
+    ("MacBook Pro", "M1 Max"): 1050,
+
+    ("MacBook Pro", "M2"): 700,
+    ("MacBook Pro", "M2 Pro"): 1000,
+    ("MacBook Pro", "M2 Max"): 1200,
+
+    ("MacBook Pro", "M3"): 900,
+    ("MacBook Pro", "M3 Pro"): 1200,
+    ("MacBook Pro", "M3 Max"): 1550,
+
+    ("MacBook Pro", "M4"): 1150,
+    ("MacBook Pro", "M4 Pro"): 1500,
+    ("MacBook Pro", "M4 Max"): 1900,
+
+    # Mac mini
+    ("Mac mini", "M1"): 330,
+    ("Mac mini", "M2"): 430,
+    ("Mac mini", "M2 Pro"): 650,
+    ("Mac mini", "M4"): 500,
+    ("Mac mini", "M4 Pro"): 850,
+
+    # iMac Apple Silicon
+    ("iMac", "M1"): 650,
+    ("iMac", "M3"): 850,
+    ("iMac", "M4"): 1000,
+
+    # Mac Studio
+    ("Mac Studio", "M1 Max"): 1000,
+    ("Mac Studio", "M1 Ultra"): 1450,
+    ("Mac Studio", "M2 Max"): 1250,
+    ("Mac Studio", "M2 Ultra"): 1800,
+}
+
+
+APPLE_INTEL_ANNEE_BASE = {
+    "MacBook Air": {
+        2013: 140,
+        2014: 160,
+        2015: 180,
+        2016: 190,
+        2017: 210,
+        2018: 250,
+        2019: 280,
+        2020: 320,
+    },
+
+    "MacBook Pro": {
+        2012: 150,
+        2013: 180,
+        2014: 210,
+        2015: 250,
+        2016: 280,
+        2017: 320,
+        2018: 360,
+        2019: 400,
+        2020: 450,
+    },
+
+    "iMac": {
+        2009: 80,
+        2010: 110,
+        2011: 120,
+        2012: 140,
+        2013: 160,
+        2014: 180,
+        2015: 210,
+        2017: 260,
+        2019: 340,
+        2020: 430,
+    },
+
+    "Mac mini": {
+        2012: 120,
+        2014: 150,
+        2018: 260,
+    },
+}
+
+
+# ============================================================
+# NORMALISATION
+# ============================================================
+
+def normaliser_reference(texte):
+    texte = str(
+        texte or ""
+    )
+
+    texte = unicodedata.normalize(
+        "NFKD",
+        texte,
+    )
+
+    texte = "".join(
+        caractere
+        for caractere in texte
+        if not unicodedata.combining(
+            caractere
+        )
+    )
+
+    texte = texte.lower()
+
+    return re.sub(
+        r"[^a-z0-9]+",
+        "",
+        texte,
     )
 
 
-    # --------------------------------
-    # ESTIMATION DU RESTE DU PC
-    # --------------------------------
-    # Carte mère, alimentation,
-    # boîtier, refroidissement, etc.
+# ============================================================
+# RECHERCHE DANS database/price.py
+# ============================================================
+
+def trouver_reference_prix(
+    categorie,
+    valeur_detectee,
+):
+    valeur_normalisee = (
+        normaliser_reference(
+            valeur_detectee
+        )
+    )
+
+    # Correspondance exacte CPU / GPU / RAM / stockage.
+    for composant, infos in (
+        PRIX_COMPOSANTS.items()
+    ):
+        if (
+            infos.get(
+                "categorie"
+            )
+            != categorie
+        ):
+            continue
+
+        references = [
+            composant,
+            *infos.get(
+                "aliases",
+                []
+            ),
+        ]
+
+        for reference in references:
+            if (
+                normaliser_reference(
+                    reference
+                )
+                ==
+                valeur_normalisee
+            ):
+                return (
+                    composant,
+                    infos,
+                )
+
+    # Correspondance souple UNIQUEMENT RAM / stockage.
+    #
+    # On refuse pour CPU/GPU pour éviter :
+    # i5-13400F -> mauvais "i5"
+    # RTX 4060 -> mauvaise RTX
+    if categorie not in {
+        "ram",
+        "stockage",
+    }:
+        return (
+            None,
+            None,
+        )
+
+    for composant, infos in (
+        PRIX_COMPOSANTS.items()
+    ):
+        if (
+            infos.get(
+                "categorie"
+            )
+            != categorie
+        ):
+            continue
+
+        references = [
+            composant,
+            *infos.get(
+                "aliases",
+                []
+            ),
+        ]
+
+        for reference in references:
+            reference_normalisee = (
+                normaliser_reference(
+                    reference
+                )
+            )
+
+            if (
+                reference_normalisee
+                and
+                reference_normalisee
+                in valeur_normalisee
+            ):
+                return (
+                    composant,
+                    infos,
+                )
+
+    return (
+        None,
+        None,
+    )
+
+
+# ============================================================
+# OUTILS MACHINE
+# ============================================================
+
+def extraire_nombre_go(valeur):
+    if not valeur:
+        return None
+
+    match = re.search(
+        r"\b(\d+)\s*go\b",
+        str(valeur),
+        flags=re.IGNORECASE,
+    )
+
+    if not match:
+        return None
+
+    try:
+        return int(
+            match.group(1)
+        )
+
+    except ValueError:
+        return None
+
+
+def stockage_en_go(valeur):
+    if not valeur:
+        return None
+
+    texte = str(
+        valeur
+    ).lower()
+
+    match_to = re.search(
+        r"(\d+(?:[.,]\d+)?)"
+        r"\s*to\b",
+        texte,
+    )
+
+    if match_to:
+        try:
+            return int(
+                float(
+                    match_to.group(1)
+                    .replace(
+                        ",",
+                        ".",
+                    )
+                )
+                * 1024
+            )
+
+        except ValueError:
+            return None
+
+    match_go = re.search(
+        r"(\d+)\s*go\b",
+        texte,
+    )
+
+    if match_go:
+        try:
+            return int(
+                match_go.group(1)
+            )
+
+        except ValueError:
+            return None
+
+    return None
+
+
+def est_portable_windows(annonce):
+    # Une seule source de verite pour les familles de
+    # portables. Cela evite qu'un Dell G15, ASUS TUF ou
+    # Alienware reconnu dans components.py tombe ensuite
+    # dans la valorisation par composants desktop.
+    return (
+        detecter_machine_portable_windows(
+            annonce
+        )
+        is not None
+    )
+
+
+def est_tout_en_un(annonce):
+    texte = texte_annonce(
+        annonce
+    )
+
+    return (
+        "tout en un" in texte
+        or
+        "all in one" in texte
+        or
+        "all-in-one" in texte
+    )
+
+
+def est_gaming(annonce):
+    texte = texte_annonce(
+        annonce
+    )
+
+    # Signaux explicites forts.
+    if any(
+        mot in texte
+        for mot in (
+            "gaming",
+            "gamer",
+        )
+    ):
+        return True
+
+    # Une annonce bureautique peut contenir "jeux vidéo"
+    # uniquement pour dire qu'elle n'est PAS adaptée au jeu.
+    motifs_negatifs = (
+        r"ne\s+convient\s+pas.{0,100}jeux?\s+video",
+        r"pas\s+(?:fait|adapte|concu|destine).{0,80}jeux?\s+video",
+        r"non\s+(?:adapte|concu|destine).{0,80}jeux?\s+video",
+        r"pas\s+pour.{0,80}jeux?\s+video",
+    )
+
+    if any(
+        re.search(
+            motif,
+            texte,
+            flags=re.IGNORECASE,
+        )
+        for motif in motifs_negatifs
+    ):
+        return False
+
+    return any(
+        mot in texte
+        for mot in (
+            "jeu video",
+            "jeux video",
+        )
+    )
+
+
+# ============================================================
+# AJUSTEMENTS APPLE
+# ============================================================
+
+def ajustement_ram_apple(ram):
+    quantite = extraire_nombre_go(
+        ram
+    )
+
+    if quantite is None:
+        return 0
+
+    if quantite >= 64:
+        return 260
+
+    if quantite >= 48:
+        return 220
+
+    if quantite >= 32:
+        return 170
+
+    if quantite >= 24:
+        return 120
+
+    if quantite >= 16:
+        return 70
+
+    return 0
+
+
+def ajustement_stockage_apple(
+    stockage,
+    puce=None,
+):
+    """
+    Sur Apple Silicon, le stockage interne est un SSD :
+    on peut appliquer un bonus de capacité.
+
+    Sur un ancien Mac Intel, une simple mention "1 To"
+    peut désigner un HDD. On ne lui donne donc PAS
+    automatiquement la valeur d'un SSD.
+    """
+
+    if not stockage:
+        return 0
+
+    texte = str(
+        stockage
+    ).lower()
+
+    stockage_rapide_confirme = (
+        puce is not None
+        or
+        "ssd" in texte
+        or
+        "nvme" in texte
+    )
+
+    if not stockage_rapide_confirme:
+        return 0
+
+    capacite = stockage_en_go(
+        stockage
+    )
+
+    if capacite is None:
+        return 0
+
+    if capacite >= 4096:
+        return 350
+
+    if capacite >= 2048:
+        return 240
+
+    if capacite >= 1024:
+        return 140
+
+    if capacite >= 512:
+        return 70
+
+    return 0
+
+
+def ajustement_ecran_apple(
+    modele,
+    ecran,
+):
+    if not ecran:
+        return 0
+
+    try:
+        taille = float(
+            str(ecran)
+            .replace(
+                " pouces",
+                "",
+            )
+        )
+
+    except ValueError:
+        return 0
+
+    if modele == "MacBook Pro":
+        if taille >= 16:
+            return 180
+
+        if taille >= 14:
+            return 100
+
+    if (
+        modele == "iMac"
+        and
+        taille >= 27
+    ):
+        return 70
+
+    return 0
+
+
+def trouver_base_intel_apple(
+    modele,
+    annee,
+):
+    table = (
+        APPLE_INTEL_ANNEE_BASE.get(
+            modele
+        )
+    )
+
+    if not table:
+        return None
+
+    if annee in table:
+        return table[
+            annee
+        ]
+
+    annees = sorted(
+        table
+    )
+
+    inferieures = [
+        annee_connue
+        for annee_connue in annees
+        if annee_connue <= annee
+    ]
+
+    superieures = [
+        annee_connue
+        for annee_connue in annees
+        if annee_connue >= annee
+    ]
+
+    if (
+        not inferieures
+        or
+        not superieures
+    ):
+        return None
+
+    annee_basse = max(
+        inferieures
+    )
+
+    annee_haute = min(
+        superieures
+    )
+
+    if (
+        annee_basse
+        ==
+        annee_haute
+    ):
+        return table[
+            annee_basse
+        ]
+
+    valeur_basse = table[
+        annee_basse
+    ]
+
+    valeur_haute = table[
+        annee_haute
+    ]
+
+    proportion = (
+        (annee - annee_basse)
+        /
+        (annee_haute - annee_basse)
+    )
+
+    return round(
+        valeur_basse
+        +
+        (
+            valeur_haute
+            -
+            valeur_basse
+        )
+        *
+        proportion
+    )
+
+
+# ============================================================
+# ESTIMATION APPLE - MACHINE COMPLETE
+# ============================================================
+
+def construire_estimation_apple(
+    annonce,
+    detection,
+):
+    machine = (
+        detection.get(
+            "machine_apple"
+        )
+        or
+        detecter_machine_apple(
+            annonce
+        )
+    )
+
+    if not machine:
+        return None
+
+    modele = machine.get(
+        "modele"
+    )
+
+    puce = machine.get(
+        "puce"
+    )
+
+    annee = machine.get(
+        "annee"
+    )
+
+    ram = machine.get(
+        "ram"
+    )
+
+    stockage = machine.get(
+        "stockage"
+    )
+
+    ecran = machine.get(
+        "ecran"
+    )
+
+    base = None
+    reference_machine = None
+    confiance_score = 0
+
+    # --------------------------------------------------------
+    # APPLE SILICON
+    # --------------------------------------------------------
+
+    if puce:
+        base = (
+            APPLE_SILICON_BASE.get(
+                (
+                    modele,
+                    puce,
+                )
+            )
+        )
+
+        if base is not None:
+            reference_machine = (
+                f"{modele} {puce}"
+            )
+
+            confiance_score = 70
+
+    # --------------------------------------------------------
+    # INTEL + ANNEE
+    # --------------------------------------------------------
+
+    if (
+        base is None
+        and
+        annee is not None
+    ):
+        base = (
+            trouver_base_intel_apple(
+                modele,
+                annee,
+            )
+        )
+
+        if base is not None:
+            reference_machine = (
+                f"{modele} {annee}"
+            )
+
+            confiance_score = 60
+
+    composants = [
+        valeur
+        for valeur in (
+            modele,
+            puce,
+            machine.get("cpu"),
+            ram,
+            stockage,
+            ecran,
+        )
+        if valeur
+    ]
+
+    # --------------------------------------------------------
+    # MODELE APPLE TROUVE MAIS PAS ASSEZ PRECIS
+    # --------------------------------------------------------
+
+    if base is None:
+        raison = (
+            "Modèle Apple identifié, mais année ou puce "
+            "insuffisante pour une valorisation fiable"
+        )
+
+        estimation = {
+            "statut":
+                "MACHINE_COMPLETE_REQUISE",
+
+            "analyse_autorisee":
+                False,
+
+            "raisons_blocage":
+                [raison],
+
+            "valeur_composants":
+                0,
+
+            "valeur_basse":
+                0,
+
+            "valeur_probable":
+                0,
+
+            "valeur_haute":
+                0,
+
+            "confiance":
+                "🔴 TRÈS FAIBLE",
+
+            "confiance_score":
+                20,
+
+            "categories_detectees":
+                set(),
+
+            "categories_valorisees":
+                set(),
+
+            "categories_fiables":
+                set(),
+
+            "categories_manquantes":
+                set(),
+
+            "categories_critiques_non_fiables":
+                set(),
+
+            "composants_valorises":
+                [],
+
+            "composants_non_valorises":
+                composants,
+
+            "composants_valorisation_non_fiable":
+                [],
+
+            "detection_composants":
+                detection,
+
+            "references_prix_utilisees":
+                {},
+
+            "coherence":
+                {
+                    "coherent":
+                        True,
+
+                    "problemes":
+                        [],
+                },
+
+            "mode_valorisation":
+                "machine_complete_apple",
+
+            "machine":
+                machine,
+        }
+
+        return (
+            0,
+            composants,
+            estimation,
+        )
+
+    # --------------------------------------------------------
+    # CONFIGURATION
+    # --------------------------------------------------------
+
+    ajustements = (
+        ajustement_ram_apple(
+            ram
+        )
+        +
+        ajustement_stockage_apple(
+            stockage,
+            puce=puce,
+        )
+        +
+        ajustement_ecran_apple(
+            modele,
+            ecran,
+        )
+    )
+
+    valeur_probable = (
+        base
+        +
+        ajustements
+    )
+
+    # Fourchette volontairement large :
+    # batterie, clavier, écran, chargeur et état
+    # ne sont pas encore tous scorés.
+    marge_fourchette = max(
+        50,
+        round(
+            valeur_probable
+            * 0.12
+        ),
+    )
+
+    valeur_basse = max(
+        0,
+        valeur_probable
+        -
+        marge_fourchette,
+    )
+
+    valeur_haute = (
+        valeur_probable
+        +
+        marge_fourchette
+    )
+
+    details = sum(
+        valeur is not None
+        for valeur in (
+            ram,
+            stockage,
+            ecran,
+            annee,
+        )
+    )
+
+    confiance_score += min(
+        15,
+        details * 4,
+    )
+
+    confiance_score = min(
+        confiance_score,
+        85,
+    )
+
+    if confiance_score >= 75:
+        confiance = (
+            "🟢 BONNE"
+        )
+
+    elif confiance_score >= 60:
+        confiance = (
+            "🟡 MOYENNE"
+        )
+
+    else:
+        confiance = (
+            "🟠 FAIBLE"
+        )
+
+    estimation = {
+        "statut":
+            "COMPLETE",
+
+        "analyse_autorisee":
+            True,
+
+        "raisons_blocage":
+            [],
+
+        # Apple = machine complète.
+        # Ne pas additionner des composants soudés.
+        "valeur_composants":
+            0,
+
+        "valeur_basse":
+            valeur_basse,
+
+        "valeur_probable":
+            valeur_probable,
+
+        "valeur_haute":
+            valeur_haute,
+
+        "confiance":
+            confiance,
+
+        "confiance_score":
+            confiance_score,
+
+        "categories_detectees":
+            set(),
+
+        "categories_valorisees":
+            set(),
+
+        "categories_fiables":
+            set(),
+
+        "categories_manquantes":
+            set(),
+
+        "categories_critiques_non_fiables":
+            set(),
+
+        "composants_valorises":
+            composants,
+
+        "composants_non_valorises":
+            [],
+
+        "composants_valorisation_non_fiable":
+            [],
+
+        "detection_composants":
+            detection,
+
+        "references_prix_utilisees":
+            {
+                "machine":
+                    reference_machine,
+            },
+
+        "coherence":
+            {
+                "coherent":
+                    True,
+
+                "problemes":
+                    [],
+            },
+
+        "mode_valorisation":
+            "machine_complete_apple",
+
+        "machine":
+            machine,
+
+        "base_machine":
+            base,
+
+        "ajustements_configuration":
+            ajustements,
+    }
+
+    return (
+        valeur_probable,
+        composants,
+        estimation,
+    )
+
+
+
+
+# ============================================================
+# PORTABLE WINDOWS - MACHINE COMPLETE
+#
+# Bases internes prudentes, calibrées pour donner un ordre
+# de grandeur. Ce ne sont pas des prix de vente garantis.
+# ============================================================
+
+PORTABLE_GPU_BASE = {
+    "GTX 960M": 210,
+    "GTX 1050": 240,
+    "GTX 1050 Ti": 290,
+    "GTX 1060": 330,
+    "GTX 1070": 360,
+    "GTX 1650": 360,
+    "GTX 1650 Ti": 390,
+    "GTX 1660 Ti": 430,
+    "RTX 2060": 440,
+    "RTX 3050": 450,
+    "RTX 3050 Ti": 480,
+    "RTX 3060": 560,
+    "RTX 3070": 650,
+    "RTX 3070 Ti": 720,
+    "RTX 3080": 760,
+    "RTX 4050": 620,
+    "RTX 4060": 760,
+    "RTX 4070": 950,
+    "RTX 4080": 1350,
+    "RTX 4090": 1750,
+}
+
+
+# Ces gammes sont vendues comme des portables gaming.
+# Sans GPU dedie precis, leur valeur ne doit pas etre
+# extrapolee depuis le CPU comme pour un portable de bureau.
+GAMMES_PORTABLES_GPU_REQUIS = {
+    "ROG Zephyrus",
+    "ROG Strix",
+    "ROG",
+    "TUF",
+    "Legion",
+    "IdeaPad Gaming",
+    "Omen",
+    "Victus",
+    "Pavilion Gaming",
+    "Predator",
+    "Nitro",
+    "Katana",
+    "Pulse",
+    "GF",
+    "GL",
+    "GS",
+    "G15",
+    "G5",
+    "Alienware",
+    "Blade",
+    "AORUS",
+}
+
+
+def extraire_generation_intel(cpu):
+    if not cpu:
+        return None
+
+    match = re.search(
+        r"\bi[3579]-(\d{4,5})",
+        str(cpu),
+        flags=re.IGNORECASE,
+    )
+
+    if not match:
+        return None
+
+    modele = match.group(1)
+
+    if len(modele) == 4:
+        return int(
+            modele[0]
+        )
+
+    if len(modele) == 5:
+        return int(
+            modele[:2]
+        )
+
+    return None
+
+
+def extraire_serie_ryzen(cpu):
+    if not cpu:
+        return None
+
+    match = re.search(
+        r"\bRyzen\s+[3579]\s+(\d{4,5})",
+        str(cpu),
+        flags=re.IGNORECASE,
+    )
+
+    if not match:
+        return None
+
+    modele = match.group(1)
+
+    try:
+        return int(
+            modele[0]
+        )
+
+    except (
+        TypeError,
+        ValueError,
+    ):
+        return None
+
+
+def ajustement_cpu_portable(cpu):
+    if not cpu:
+        return None
+
+    cpu_texte = str(
+        cpu
+    )
+
+    generation_intel = (
+        extraire_generation_intel(
+            cpu_texte
+        )
+    )
+
+    if generation_intel is not None:
+        if generation_intel <= 6:
+            ajustement_generation = -30
+
+        elif generation_intel == 7:
+            ajustement_generation = -20
+
+        elif generation_intel in {
+            8,
+            9,
+        }:
+            ajustement_generation = 0
+
+        elif generation_intel in {
+            10,
+            11,
+        }:
+            ajustement_generation = 30
+
+        elif generation_intel == 12:
+            ajustement_generation = 60
+
+        elif generation_intel == 13:
+            ajustement_generation = 90
+
+        else:
+            ajustement_generation = 120
+
+        if cpu_texte.lower().startswith(
+            "i3-"
+        ):
+            ajustement_famille = -40
+
+        elif cpu_texte.lower().startswith(
+            "i7-"
+        ):
+            ajustement_famille = 35
+
+        elif cpu_texte.lower().startswith(
+            "i9-"
+        ):
+            ajustement_famille = 80
+
+        else:
+            ajustement_famille = 0
+
+        return (
+            ajustement_generation
+            +
+            ajustement_famille
+        )
+
+    serie_ryzen = (
+        extraire_serie_ryzen(
+            cpu_texte
+        )
+    )
+
+    if serie_ryzen is not None:
+        ajustements_series = {
+            3: -10,
+            4: 10,
+            5: 35,
+            6: 60,
+            7: 90,
+            8: 120,
+            9: 140,
+        }
+
+        ajustement_generation = (
+            ajustements_series.get(
+                serie_ryzen,
+                0,
+            )
+        )
+
+        if re.search(
+            r"\bRyzen\s+3\b",
+            cpu_texte,
+            flags=re.IGNORECASE,
+        ):
+            ajustement_famille = -35
+
+        elif re.search(
+            r"\bRyzen\s+7\b",
+            cpu_texte,
+            flags=re.IGNORECASE,
+        ):
+            ajustement_famille = 35
+
+        elif re.search(
+            r"\bRyzen\s+9\b",
+            cpu_texte,
+            flags=re.IGNORECASE,
+        ):
+            ajustement_famille = 80
+
+        else:
+            ajustement_famille = 0
+
+        return (
+            ajustement_generation
+            +
+            ajustement_famille
+        )
+
+    return None
+
+
+def base_portable_bureautique(cpu):
+    """
+    Base prudente pour un portable sans GPU dédié.
+    Un CPU précis est obligatoire.
+    """
+
+    if not cpu:
+        return None
+
+    cpu_texte = str(
+        cpu
+    )
+
+    generation = (
+        extraire_generation_intel(
+            cpu_texte
+        )
+    )
+
+    if generation is not None:
+        if generation <= 5:
+            base = 100
+
+        elif generation <= 7:
+            base = 140
+
+        elif generation <= 9:
+            base = 190
+
+        elif generation <= 11:
+            base = 260
+
+        elif generation == 12:
+            base = 330
+
+        elif generation == 13:
+            base = 400
+
+        else:
+            base = 460
+
+        if cpu_texte.lower().startswith(
+            "i3-"
+        ):
+            base -= 40
+
+        elif cpu_texte.lower().startswith(
+            "i7-"
+        ):
+            base += 45
+
+        elif cpu_texte.lower().startswith(
+            "i9-"
+        ):
+            base += 90
+
+        return max(
+            70,
+            base,
+        )
+
+    serie_ryzen = (
+        extraire_serie_ryzen(
+            cpu_texte
+        )
+    )
+
+    if serie_ryzen is not None:
+        bases = {
+            3: 170,
+            4: 220,
+            5: 280,
+            6: 340,
+            7: 420,
+            8: 500,
+            9: 560,
+        }
+
+        base = bases.get(
+            serie_ryzen
+        )
+
+        if base is None:
+            return None
+
+        if re.search(
+            r"\bRyzen\s+3\b",
+            cpu_texte,
+            flags=re.IGNORECASE,
+        ):
+            base -= 35
+
+        elif re.search(
+            r"\bRyzen\s+7\b",
+            cpu_texte,
+            flags=re.IGNORECASE,
+        ):
+            base += 45
+
+        elif re.search(
+            r"\bRyzen\s+9\b",
+            cpu_texte,
+            flags=re.IGNORECASE,
+        ):
+            base += 90
+
+        return max(
+            90,
+            base,
+        )
+
+    return None
+
+
+def ajustement_ram_portable(ram):
+    quantite = extraire_nombre_go(
+        ram
+    )
+
+    if quantite is None:
+        return 0
+
+    if quantite >= 64:
+        return 140
+
+    if quantite >= 32:
+        return 80
+
+    if quantite >= 24:
+        return 55
+
+    if quantite >= 16:
+        return 35
+
+    if quantite <= 4:
+        return -40
+
+    return 0
+
+
+def ajustement_stockage_portable(
+    stockage,
+):
+    if not stockage:
+        return 0
+
+    texte = str(
+        stockage
+    ).lower()
+
+    capacite = stockage_en_go(
+        stockage
+    )
+
+    if capacite is None:
+        return 0
+
+    # SSD/NVMe : prime de capacité.
+    if (
+        "ssd" in texte
+        or
+        "nvme" in texte
+    ):
+        if capacite >= 2048:
+            return 100
+
+        if capacite >= 1024:
+            return 60
+
+        if capacite >= 512:
+            return 30
+
+        if capacite <= 128:
+            return -20
+
+        return 0
+
+    # HDD seul : faible valeur ajoutée.
+    if (
+        "hdd" in texte
+        and
+        capacite >= 1024
+    ):
+        return 10
+
+    return 0
+
+
+def ajustement_gamme_portable(
+    gamme,
+):
+    if not gamme:
+        return 0
+
+    premium = {
+        "ROG Zephyrus": 70,
+        "ROG Strix": 50,
+        "ROG": 35,
+        "Legion": 45,
+        "Predator": 35,
+        "Alienware": 70,
+        "Blade": 80,
+        "AORUS": 40,
+        "XPS": 55,
+        "GS": 35,
+        "Omen": 25,
+    }
+
+    return premium.get(
+        gamme,
+        0,
+    )
+
+
+def ajustement_ecran_portable(
+    machine,
+):
+    ajustement = 0
+
+    ecran = machine.get(
+        "ecran"
+    )
+
+    frequence = machine.get(
+        "frequence_ecran"
+    )
+
+    if ecran:
+        try:
+            taille = float(
+                str(ecran)
+                .replace(
+                    " pouces",
+                    "",
+                )
+            )
+
+            if taille >= 17:
+                ajustement += 15
+
+        except ValueError:
+            pass
+
+    if frequence:
+        match = re.search(
+            r"(\d+)",
+            str(frequence),
+        )
+
+        if match:
+            hz = int(
+                match.group(1)
+            )
+
+            if hz >= 240:
+                ajustement += 45
+
+            elif hz >= 165:
+                ajustement += 35
+
+            elif hz >= 144:
+                ajustement += 25
+
+            elif hz >= 120:
+                ajustement += 15
+
+    return ajustement
+
+
+def construire_estimation_portable_windows(
+    annonce,
+    detection,
+):
+    machine = (
+        detection.get(
+            "machine_portable_windows"
+        )
+        or
+        detecter_machine_portable_windows(
+            annonce
+        )
+    )
+
+    if not machine:
+        return None
+
+    cpu = machine.get(
+        "cpu"
+    )
+
+    gpu = machine.get(
+        "gpu"
+    )
+
+    ram = machine.get(
+        "ram"
+    )
+
+    stockage = machine.get(
+        "stockage"
+    )
+
+    gamme = machine.get(
+        "gamme"
+    )
+
+    composants = [
+        valeur
+        for valeur in (
+            machine.get("marque"),
+            gamme,
+            gpu,
+            cpu,
+            ram,
+            stockage,
+            machine.get("ecran"),
+            machine.get("frequence_ecran"),
+        )
+        if valeur
+    ]
+
+    raisons_blocage = []
+    base = None
+    reference_machine = None
+    confiance_score = 0
+
+    # --------------------------------------------------------
+    # PORTABLE AVEC GPU DEDIE
+    # --------------------------------------------------------
+
+    if gpu:
+        base = PORTABLE_GPU_BASE.get(
+            gpu
+        )
+
+        if base is None:
+            raisons_blocage.append(
+                "GPU portable détecté mais aucune "
+                "base de valorisation fiable n'est disponible"
+            )
+
+        if cpu is None:
+            raisons_blocage.append(
+                "CPU précis manquant pour valoriser "
+                "le portable gaming"
+            )
+
+        if (
+            base is not None
+            and
+            cpu is not None
+        ):
+            reference_machine = (
+                f"portable GPU {gpu}"
+            )
+
+            ajustement_cpu = (
+                ajustement_cpu_portable(
+                    cpu
+                )
+            )
+
+            if ajustement_cpu is None:
+                raisons_blocage.append(
+                    "Génération CPU portable non reconnue"
+                )
+
+            else:
+                base += ajustement_cpu
+                confiance_score = 68
+
+    # --------------------------------------------------------
+    # PORTABLE SANS GPU DEDIE
+    # --------------------------------------------------------
+
+    else:
+        if (
+            est_gaming(
+                annonce
+            )
+            or
+            gamme
+            in GAMMES_PORTABLES_GPU_REQUIS
+        ):
+            raisons_blocage.append(
+                "Portable gaming annoncé mais GPU "
+                "dédié non identifié"
+            )
+
+        else:
+            base = (
+                base_portable_bureautique(
+                    cpu
+                )
+            )
+
+            if base is None:
+                raisons_blocage.append(
+                    "CPU précis requis pour valoriser "
+                    "ce portable"
+                )
+
+            else:
+                reference_machine = (
+                    f"portable CPU {cpu}"
+                )
+
+                confiance_score = 55
+
+    # --------------------------------------------------------
+    # BLOCAGE SI BASE INSUFFISANTE
+    # --------------------------------------------------------
+
+    if (
+        base is None
+        or raisons_blocage
+    ):
+        estimation = {
+            "statut":
+                "MACHINE_COMPLETE_REQUISE",
+
+            "analyse_autorisee":
+                False,
+
+            "raisons_blocage":
+                raisons_blocage
+                or [
+                    "Informations insuffisantes pour "
+                    "valoriser ce portable"
+                ],
+
+            "valeur_composants":
+                0,
+
+            "valeur_basse":
+                0,
+
+            "valeur_probable":
+                0,
+
+            "valeur_haute":
+                0,
+
+            "confiance":
+                "🔴 TRÈS FAIBLE",
+
+            "confiance_score":
+                20,
+
+            "categories_detectees":
+                {
+                    categorie
+                    for categorie in (
+                        "gpu",
+                        "cpu",
+                        "ram",
+                        "stockage",
+                    )
+                    if detection.get(
+                        categorie
+                    )
+                },
+
+            "categories_valorisees":
+                set(),
+
+            "categories_fiables":
+                set(),
+
+            "categories_manquantes":
+                set(),
+
+            "categories_critiques_non_fiables":
+                set(),
+
+            "composants_valorises":
+                [],
+
+            "composants_non_valorises":
+                composants,
+
+            "composants_valorisation_non_fiable":
+                [],
+
+            "detection_composants":
+                detection,
+
+            "references_prix_utilisees":
+                {},
+
+            "coherence":
+                {
+                    "coherent":
+                        True,
+
+                    "problemes":
+                        [],
+                },
+
+            "mode_valorisation":
+                "machine_complete_portable_windows",
+
+            "machine":
+                machine,
+        }
+
+        return (
+            0,
+            composants,
+            estimation,
+        )
+
+    # --------------------------------------------------------
+    # AJUSTEMENTS CONFIGURATION
+    # --------------------------------------------------------
+
+    valeur_probable = (
+        base
+        +
+        ajustement_ram_portable(
+            ram
+        )
+        +
+        ajustement_stockage_portable(
+            stockage
+        )
+        +
+        ajustement_gamme_portable(
+            gamme
+        )
+        +
+        ajustement_ecran_portable(
+            machine
+        )
+    )
+
+    valeur_probable = max(
+        70,
+        round(
+            valeur_probable
+        ),
+    )
+
+    # Fourchette plus large que sur un desktop :
+    # état de batterie, écran, châssis, TGP GPU et modèle exact
+    # influencent fortement un portable.
+    pourcentage = (
+        0.16
+        if gpu
+        else 0.20
+    )
+
+    marge_fourchette = max(
+        50,
+        round(
+            valeur_probable
+            * pourcentage
+        ),
+    )
+
+    valeur_basse = max(
+        0,
+        valeur_probable
+        -
+        marge_fourchette,
+    )
+
+    valeur_haute = (
+        valeur_probable
+        +
+        marge_fourchette
+    )
+
+    details = sum(
+        valeur is not None
+        for valeur in (
+            ram,
+            stockage,
+            machine.get(
+                "ecran"
+            ),
+            machine.get(
+                "frequence_ecran"
+            ),
+            gamme,
+        )
+    )
+
+    confiance_score += min(
+        17,
+        details * 3,
+    )
+
+    confiance_score = min(
+        85,
+        confiance_score,
+    )
+
+    if confiance_score >= 75:
+        confiance = (
+            "🟢 BONNE"
+        )
+
+    elif confiance_score >= 60:
+        confiance = (
+            "🟡 MOYENNE"
+        )
+
+    else:
+        confiance = (
+            "🟠 FAIBLE"
+        )
+
+    categories_detectees = {
+        categorie
+        for categorie in (
+            "gpu",
+            "cpu",
+            "ram",
+            "stockage",
+        )
+        if detection.get(
+            categorie
+        )
+    }
+
+    estimation = {
+        "statut":
+            "COMPLETE",
+
+        "analyse_autorisee":
+            True,
+
+        "raisons_blocage":
+            [],
+
+        # Portable = valeur machine complète.
+        "valeur_composants":
+            0,
+
+        "valeur_basse":
+            valeur_basse,
+
+        "valeur_probable":
+            valeur_probable,
+
+        "valeur_haute":
+            valeur_haute,
+
+        "confiance":
+            confiance,
+
+        "confiance_score":
+            confiance_score,
+
+        "categories_detectees":
+            categories_detectees,
+
+        "categories_valorisees":
+            categories_detectees,
+
+        "categories_fiables":
+            categories_detectees,
+
+        "categories_manquantes":
+            set(),
+
+        "categories_critiques_non_fiables":
+            set(),
+
+        "composants_valorises":
+            composants,
+
+        "composants_non_valorises":
+            [],
+
+        "composants_valorisation_non_fiable":
+            [],
+
+        "detection_composants":
+            detection,
+
+        "references_prix_utilisees":
+            {
+                "machine":
+                    reference_machine,
+            },
+
+        "coherence":
+            {
+                "coherent":
+                    True,
+
+                "problemes":
+                    [],
+            },
+
+        "mode_valorisation":
+            "machine_complete_portable_windows",
+
+        "machine":
+            machine,
+
+        "base_machine":
+            base,
+    }
+
+    return (
+        valeur_probable,
+        composants,
+        estimation,
+    )
+
+
+# ============================================================
+# MACHINE COMPLETE A VALORISER PLUS TARD
+# ============================================================
+
+def estimation_machine_complete_requise(
+    annonce,
+    detection,
+    raison,
+):
+    composants = []
+
+    for categorie in (
+        "gpu",
+        "cpu",
+        "ram",
+        "stockage",
+    ):
+        valeurs = detection.get(
+            categorie,
+            [],
+        )
+
+        if valeurs:
+            composants.append(
+                valeurs[0]
+            )
+
+    categories_detectees = {
+        categorie
+        for categorie in (
+            "gpu",
+            "cpu",
+            "ram",
+            "stockage",
+        )
+        if detection.get(
+            categorie
+        )
+    }
+
+    estimation = {
+        "statut":
+            "MACHINE_COMPLETE_REQUISE",
+
+        "analyse_autorisee":
+            False,
+
+        "raisons_blocage":
+            [raison],
+
+        "valeur_composants":
+            0,
+
+        "valeur_basse":
+            0,
+
+        "valeur_probable":
+            0,
+
+        "valeur_haute":
+            0,
+
+        "confiance":
+            "🔴 TRÈS FAIBLE",
+
+        "confiance_score":
+            20,
+
+        "categories_detectees":
+            categories_detectees,
+
+        "categories_valorisees":
+            set(),
+
+        "categories_fiables":
+            set(),
+
+        "categories_manquantes":
+            set(),
+
+        "categories_critiques_non_fiables":
+            set(),
+
+        "composants_valorises":
+            [],
+
+        "composants_non_valorises":
+            composants,
+
+        "composants_valorisation_non_fiable":
+            [],
+
+        "detection_composants":
+            detection,
+
+        "references_prix_utilisees":
+            {},
+
+        "coherence":
+            {
+                "coherent":
+                    True,
+
+                "problemes":
+                    [],
+            },
+
+        "mode_valorisation":
+            "machine_complete_requise",
+    }
+
+    return (
+        0,
+        composants,
+        estimation,
+    )
+
+
+# ============================================================
+# DESKTOP - VALORISATION PAR COMPOSANTS
+# ============================================================
+
+def estimer_desktop_par_composants(
+    annonce,
+    detection,
+):
+    coherence = verifier_coherence(
+        annonce,
+        detection,
+    )
+
+    valeur_composants = 0
+
+    composants = []
+    composants_valorises = []
+    composants_non_valorises = []
+    composants_valorisation_non_fiable = []
+
+    categories_detectees = set()
+    categories_valorisees = set()
+    categories_fiables = set()
+
+    references_prix_utilisees = {}
+
+    ordre_categories = (
+        "gpu",
+        "cpu",
+        "ram",
+        "stockage",
+    )
+
+    for categorie in ordre_categories:
+        valeurs_detectees = (
+            detection.get(
+                categorie,
+                [],
+            )
+        )
+
+        if not valeurs_detectees:
+            continue
+
+        valeur_detectee = (
+            valeurs_detectees[0]
+        )
+
+        categories_detectees.add(
+            categorie
+        )
+
+        composants.append(
+            valeur_detectee
+        )
+
+        (
+            reference_prix,
+            infos,
+        ) = trouver_reference_prix(
+            categorie,
+            valeur_detectee,
+        )
+
+        if infos is None:
+            composants_non_valorises.append(
+                valeur_detectee
+            )
+
+            continue
+
+        references_prix_utilisees[
+            valeur_detectee
+        ] = reference_prix
+
+        prix = infos.get(
+            "prix"
+        )
+
+        valorisation_fiable = (
+            infos.get(
+                "valorisation_fiable",
+                False,
+            )
+        )
+
+        if isinstance(
+            prix,
+            (int, float),
+        ):
+            valeur_composants += prix
+
+            categories_valorisees.add(
+                categorie
+            )
+
+            composants_valorises.append(
+                valeur_detectee
+            )
+
+            if valorisation_fiable:
+                categories_fiables.add(
+                    categorie
+                )
+
+            else:
+                composants_valorisation_non_fiable.append(
+                    valeur_detectee
+                )
+
+        else:
+            composants_non_valorises.append(
+                valeur_detectee
+            )
+
+    categories_manquantes = (
+        CATEGORIES_PRINCIPALES
+        -
+        categories_detectees
+    )
+
+    # CPU obligatoire pour un desktop complet.
+    categories_critiques = {
+        "cpu",
+    }
+
+    # Pour un PC gaming, GPU obligatoire.
+    # Pour un PC complet non gaming, si un GPU est déclaré,
+    # sa valorisation doit également être fiable.
+    if (
+        est_gaming(
+            annonce
+        )
+        or
+        detection.get(
+            "gpu"
+        )
+    ):
+        categories_critiques.add(
+            "gpu"
+        )
+
+    categories_critiques_non_fiables = (
+        categories_critiques
+        -
+        categories_fiables
+    )
+
+    raisons_blocage = []
+
+    for categorie in sorted(
+        categories_critiques_non_fiables
+    ):
+        raisons_blocage.append(
+            f"Valorisation "
+            f"{categorie.upper()} "
+            "insuffisamment fiable"
+        )
+
+    if not coherence.get(
+        "coherent",
+        True,
+    ):
+        for probleme in coherence.get(
+            "problemes",
+            [],
+        ):
+            raisons_blocage.append(
+                probleme
+            )
+
+    analyse_autorisee = (
+        not
+        categories_critiques_non_fiables
+        and
+        coherence.get(
+            "coherent",
+            True,
+        )
+    )
 
     if valeur_composants > 0:
+        valeur_basse = (
+            valeur_composants
+            + 50
+        )
 
-        valeur_basse = valeur_composants + 50
-
-        valeur_probable = valeur_composants + 100
+        valeur_probable = (
+            valeur_composants
+            + 100
+        )
 
         valeur_haute = (
             valeur_composants
             + 150
-            + (len(categories_manquantes) * 50)
+            + (
+                len(
+                    categories_manquantes
+                )
+                * 50
+            )
         )
 
     else:
-
         valeur_basse = 0
         valeur_probable = 0
         valeur_haute = 0
 
+    nombre_categories_fiables = len(
+        categories_fiables
+    )
 
-    # --------------------------------
-    # NIVEAU DE CONFIANCE
-    # --------------------------------
-
-    nombre_categories = len(categories_trouvees)
-
-    if nombre_categories >= 4:
-
-        confiance = "🟢 BONNE"
+    if nombre_categories_fiables >= 4:
+        confiance = (
+            "🟢 BONNE"
+        )
         confiance_score = 80
 
-    elif nombre_categories == 3:
-
-        confiance = "🟡 MOYENNE"
+    elif nombre_categories_fiables == 3:
+        confiance = (
+            "🟡 MOYENNE"
+        )
         confiance_score = 60
 
-    elif nombre_categories == 2:
-
-        confiance = "🟠 FAIBLE"
+    elif nombre_categories_fiables == 2:
+        confiance = (
+            "🟠 FAIBLE"
+        )
         confiance_score = 40
 
     else:
-
-        confiance = "🔴 TRÈS FAIBLE"
+        confiance = (
+            "🔴 TRÈS FAIBLE"
+        )
         confiance_score = 20
 
+    if not analyse_autorisee:
+        confiance_score = min(
+            confiance_score,
+            40,
+        )
+
+        if confiance_score <= 20:
+            confiance = (
+                "🔴 TRÈS FAIBLE"
+            )
+
+        else:
+            confiance = (
+                "🟠 FAIBLE"
+            )
+
+    statut = (
+        "COMPLETE"
+        if analyse_autorisee
+        else "INCOMPLETE"
+    )
 
     estimation = {
-        "valeur_composants": valeur_composants,
-        "valeur_basse": valeur_basse,
-        "valeur_probable": valeur_probable,
-        "valeur_haute": valeur_haute,
-        "confiance": confiance,
-        "confiance_score": confiance_score,
-        "categories_trouvees": categories_trouvees,
-        "categories_manquantes": categories_manquantes
+        "statut":
+            statut,
+
+        "analyse_autorisee":
+            analyse_autorisee,
+
+        "raisons_blocage":
+            raisons_blocage,
+
+        "valeur_composants":
+            valeur_composants,
+
+        "valeur_basse":
+            valeur_basse,
+
+        "valeur_probable":
+            valeur_probable,
+
+        "valeur_haute":
+            valeur_haute,
+
+        "confiance":
+            confiance,
+
+        "confiance_score":
+            confiance_score,
+
+        "categories_detectees":
+            categories_detectees,
+
+        "categories_valorisees":
+            categories_valorisees,
+
+        "categories_fiables":
+            categories_fiables,
+
+        "categories_manquantes":
+            categories_manquantes,
+
+        "categories_critiques_non_fiables":
+            categories_critiques_non_fiables,
+
+        "composants_valorises":
+            composants_valorises,
+
+        "composants_non_valorises":
+            composants_non_valorises,
+
+        "composants_valorisation_non_fiable":
+            composants_valorisation_non_fiable,
+
+        "detection_composants":
+            detection,
+
+        "references_prix_utilisees":
+            references_prix_utilisees,
+
+        "coherence":
+            coherence,
+
+        "mode_valorisation":
+            "composants_desktop",
     }
 
+    return (
+        valeur_probable,
+        composants,
+        estimation,
+    )
 
-    # On garde valeur_probable comme valeur principale
-    # pour ne pas casser profit.py et opportunity.py
-    return valeur_probable, composants, estimation
+
+# ============================================================
+# FONCTION PRINCIPALE
+# ============================================================
+
+def estimer_valeur(annonce):
+    detection = detecter_composants(
+        annonce
+    )
+
+    # ========================================================
+    # 1. APPLE
+    #
+    # MacBook / iMac / Mac mini / Mac Studio :
+    # valorisation comme MACHINE COMPLETE.
+    # ========================================================
+
+    if detection.get(
+        "machine_apple"
+    ):
+        resultat_apple = (
+            construire_estimation_apple(
+                annonce,
+                detection,
+            )
+        )
+
+        if resultat_apple is not None:
+            return resultat_apple
+
+    # ========================================================
+    # 2. PORTABLE WINDOWS
+    #
+    # Toujours protégé pour l'instant.
+    # On ajoutera son moteur de comparables séparément.
+    # ========================================================
+
+    if est_portable_windows(
+        annonce
+    ):
+        resultat_portable = (
+            construire_estimation_portable_windows(
+                annonce,
+                detection,
+            )
+        )
+
+        if resultat_portable is not None:
+            return resultat_portable
+
+        return (
+            estimation_machine_complete_requise(
+                annonce,
+                detection,
+                (
+                    "Portable : informations insuffisantes "
+                    "pour une valorisation fiable"
+                ),
+            )
+        )
+
+    # ========================================================
+    # 3. TOUT-EN-UN NON APPLE
+    # ========================================================
+
+    if est_tout_en_un(
+        annonce
+    ):
+        return (
+            estimation_machine_complete_requise(
+                annonce,
+                detection,
+                (
+                    "Tout-en-un : valorisation par "
+                    "machine complète requise"
+                ),
+            )
+        )
+
+    # ========================================================
+    # 4. DESKTOP CLASSIQUE
+    # ========================================================
+
+    return (
+        estimer_desktop_par_composants(
+            annonce,
+            detection,
+        )
+    )
